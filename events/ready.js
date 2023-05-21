@@ -8,7 +8,7 @@ module.exports = {
 		const options = [
 			{
 				type: ActivityType.Watching,
-				text: "over splashymothtv",
+				text: "over the server",
 				status: "online"
 			},
 			{
