@@ -1,7 +1,7 @@
 module.exports = (client) => {
     client.on("guildMemberAdd", (member) => {
-        const channelId = "748339924226277377";
-        const rulesChannel = "726432899116695673";
+        const channelId = "your-welcChannel-id";
+        const rulesChannel = "your-rulesChannel-id";
         console.log(member);
 
         const message = `** Welcome to The server, <@${member.id}> Be sure to check out the ${member.guild.channel.cache.get(rulesChannel).toString()} **`;
