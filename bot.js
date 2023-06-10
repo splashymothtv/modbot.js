@@ -65,7 +65,19 @@ client.on(Events.GuildMemberAdd, async (member) => {
     .setTimestamp(Date.now())
 
   welcomeChannel.send({ embeds: [welcomeEmbed]  });
-})
+});
+  client.on(Events.GuildMemberRemove, async (member) => {
+  const { user, guild } = member;
+  const goodbyeChannel = member.guild.channels.cache.get('your-welcomeChannelId');
+  const goodbyeEmbed = new EmbedBuilder()
+    .setColor('Purple')
+    .setTitle(`**${member.user.tag}** has left ${guild.name}!`)
+    .setDescription(`Let's hope they enjoyed their time with us!`)
+    .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
+    .setTimestamp(Date.now())
+
+  goodbyeChannel.send({ embeds: [goodbyeEmbed]  });
+});
 
 client.login(token);
 keepAlive();
