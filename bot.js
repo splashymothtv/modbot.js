@@ -79,5 +79,180 @@ client.on(Events.GuildMemberAdd, async (member) => {
   goodbyeChannel.send({ embeds: [goodbyeEmbed]  });
 });
 
+//mod logging
+
+client.on(Events.ChannelCreate, async channel => {
+  channel.guild.fetchAuditLogs({
+    type: AuditLogEvent.ChannelCreate,
+  }).then(async audit => {
+    const { executor } = audit.entries.first()
+
+    const name = channel.name;
+    const id = channel.id;
+    let type = channel.type;
+
+    if (type == 0) type = 'Text'
+    if (type == 2) type = 'Voice'
+    if (type == 13) type = 'Stage'
+    if (type == 15) type = 'Form'
+    if (type == 5) type = 'Announcement'
+    if (type == 4) type = 'Category'
+
+    const channelID = 'your-log-channel-id';
+    const mChannel = await channel.guild.channels.cache.get(channelID);
+
+    const embed = new EmbedBuilder()
+    .setColor('Red')
+    .setTitle('Channel created')
+    .addFields({ name: "Channel Name", value: `${name} (<@${id}>)`, inline: false})
+    .addFields({ name: "Channel Type", value: `${type}`, inline: false})
+    .addFields({ name: "Channel ID", value: `${id}`, inline: false})
+    .addFields({ name: "Created By", value: `${executor.tag}`, inline: false})
+    .setTimestamp()
+    .setFooter({ text: 'Mod logging system'})
+
+    mChannel.send({ embeds: [embed] });
+    
+
+  })
+})
+
+client.on(Events.ChannelDelete, async channel => {
+  channel.guild.fetchAuditLogs({
+    type: AuditLogEvent.ChannelDelete,
+  }).then(async audit => {
+    const { executor } = audit.entries.first()
+
+    const name = channel.name;
+    const id = channel.id;
+    let type = channel.type;
+
+    if (type == 0) type = 'Text'
+    if (type == 2) type = 'Voice'
+    if (type == 13) type = 'Stage'
+    if (type == 15) type = 'Form'
+    if (type == 5) type = 'Announcement'
+    if (type == 4) type = 'Category'
+
+    const channelID = 'your-log-channel-id';
+    const mChannel = await channel.guild.channels.cache.get(channelID);
+
+    const embed = new EmbedBuilder()
+    .setColor('Red')
+    .setTitle('Channel created')
+    .addFields({ name: "Channel Name", value: `${name}`, inline: false})
+    .addFields({ name: "Channel Type", value: `${type}`, inline: false})
+    .addFields({ name: "Channel ID", value: `${id}`, inline: false})
+    .addFields({ name: "Deleted By", value: `${executor.tag}`, inline: false})
+    .setTimestamp()
+    .setFooter({ text: 'Mod logging system'})
+
+    mChannel.send({ embeds: [embed] });
+  })
+})
+
+client.on(Events.GuildBanAdd, async member => {
+  member.guild.fetchAuditLogs({
+    type: AuditLogEvent.GuildBanAdd,
+  }).then(async audit => {
+    const { executor } = audit.entries.first()
+
+    const name = member.user.username;
+    const id = member.user.id;
+
+    const channelID = 'your-log-channel-id';
+    const mChannel = await member.guild.channels.cache.get(channelID);
+
+    const embed = new EmbedBuilder()
+    .setColor('Red')
+    .setTitle('Member Ban')
+    .addFields({ name: "Member Name", value: `${name} (<@${id}>)`, inline: false})
+    .addFields({ name: "Member ID", value: `${id}`, inline: false})
+    .addFields({ name: "Banned By", value: `${executor.tag}`, inline: false})
+    .setTimestamp()
+    .setFooter({ text: 'Mod logging system'})
+
+    mChannel.send({ embeds: [embed] });
+  })
+})
+
+client.on(Events.GuildBanRemove, async member => {
+  member.guild.fetchAuditLogs({
+    type: AuditLogEvent.GuildBanRemove,
+  }).then(async audit => {
+    const { executor } = audit.entries.first()
+
+    const name = member.user.username;
+    const id = member.user.id;
+
+    const channelID = 'your-log-channel-id';
+    const mChannel = await member.guild.channels.cache.get(channelID);
+
+    const embed = new EmbedBuilder()
+    .setColor('Red')
+    .setTitle('Member Unbanned')
+    .addFields({ name: "Member Name", value: `${name} (<@${id}>)`, inline: false})
+    .addFields({ name: "Member ID", value: `${id}`, inline: false})
+    .addFields({ name: "Unbanned By", value: `${executor.tag}`, inline: false})
+    .setTimestamp()
+    .setFooter({ text: 'Mod logging system'})
+
+    mChannel.send({ embeds: [embed] });
+  })
+})
+
+client.on(Events.MessageDelete, async message => {
+  message.guild.fetchAuditLogs({
+    type: AuditLogEvent.MessageDelete,
+  }).then(async audit => {
+    const { executor } = audit.entries.first()
+
+    const mes = message.content;
+
+    if (!mes) return;
+
+    const channelID = 'your-log-channel-id';
+    const mChannel = await message.guild.channels.cache.get(channelID);
+
+    const embed = new EmbedBuilder()
+    .setColor('Red')
+    .setTitle('Message Deleted')
+    .addFields({ name: "Message Content", value: `${mes}`, inline: false})
+    .addFields({ name: "Message Channel", value: `${message.channel}`, inline: false})
+    .addFields({ name: "Deleted By", value: `${executor.tag}`, inline: false})
+    .setTimestamp()
+    .setFooter({ text: 'Mod logging system'})
+
+    mChannel.send({ embeds: [embed] });
+  })
+})
+// mod logging
+
+client.on(Events.MessageUpdate, async (message, newMessage) => {
+  message.guild.fetchAuditLogs({
+    type: AuditLogEvent.MessageUpdate,
+  }).then(async audit => {
+    const { executor } = audit.entries.first()
+
+    const mes = message.content;
+
+    if (!mes) return;
+
+    const channelID = 'your-log-channel-id';
+    const mChannel = await message.guild.channels.cache.get(channelID);
+
+    const embed = new EmbedBuilder()
+    .setColor('Red')
+    .setTitle('Message Edited')
+    .addFields({ name: "Message Content", value: `${mes}`, inline: false})
+    .addFields({ name: "Message Channel", value: `${newMessage}`, inline: false})
+    .addFields({ name: "Edited By", value: `${executor.tag}`, inline: false})
+    .setTimestamp()
+    .setFooter({ text: 'Mod logging system'})
+
+    mChannel.send({ embeds: [embed] });
+  })
+})
+
 client.login(token);
 keepAlive();
