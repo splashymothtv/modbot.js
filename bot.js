@@ -6,8 +6,7 @@ const mongoose = require('mongoose');
 
 const { token, clientId, guildId, mongoLogin } = require('./config.json');
 
-
-const keepAlive = require("./server.js");
+const keepAlive = require('./server');
 
 client.commands = new Collection();
 const foldersPath = path.join(__dirname, 'commands');
