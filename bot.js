@@ -287,5 +287,42 @@ client.on(Events.MessageUpdate, async (message, newMessage) => {
   })
 })
 
+const reportSchema = require('./schemas/reportSchema');
+client.on(Events.InteractionCreate, async interaction => {
+
+  if (!interaction.isModalSubmit()) return;
+
+  if (interaction.customId === 'modal') {
+    const contact = interaction.fields.getTextInputValue('contact')
+    const issue = interaction.fields.getTextInputValue('issue')
+    const description = interaction.fields.getTextInputValue('description')
+
+    const member = interaction.user.id;
+    const tag = interaction.user.tag;
+    const server = interaction.guild.name;
+
+    const embed = new EmbedBuilder()
+    .setColor('Red')
+    .setTimestamp()
+    .addFields({ name: 'Form of contact', value: ` ${contact}`, inline: false })
+    .addFields({ name: 'Issue reported', value: ` ${issue}`, inline: false })
+    .addFields({ name: 'description of issue', value: ` ${description}`, inline: false })
+
+    reportSchema.findOne({ Guild: interaction.guild.id }, async (err, data) => {
+      if (!data) return;
+
+      if (data) {
+        const channelID = data.Channel;
+
+        const channel = interaction.guild.channels.cache.get(channelID);
+
+        channel.send({ embeds: [embed] });
+
+        await interaction.reply({ content: 'Your report has been sent to the moderators', ephemeral: true });
+      }
+    })
+  }
+})
+
 client.login(token);
 keepAlive();
