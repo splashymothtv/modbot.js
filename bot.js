@@ -5,7 +5,6 @@ const { token } = require('./config.json');
 
 const client = new Client({ intents: 32767 });
 
-
 const keepAlive = require("./server.js");
 
 client.commands = new Collection();
@@ -112,7 +111,6 @@ client.on(Events.ChannelCreate, async channel => {
 
     mChannel.send({ embeds: [embed] });
     
-
   })
 })
 
@@ -380,7 +378,6 @@ client.on(Events.GuildMemberAdd, async member => {
         })
 
         guild = member.guild;
-
     }
 })
 
@@ -406,7 +403,6 @@ client.on(Events.InteractionCreate, async interaction => {
             })
 
             await interaction.reply({ content: `🎈🎉YAY!! You have been verified for the server ${capGuild.name}🎉🎈`});
-
         }
     }
 })
