@@ -405,7 +405,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 interaction.reply({ content: "There was an error in the verifying process, contact server staff to proceed, please.", ephemeral: true });
             })
 
-            await interaction.reply({ content: `Congratulations!! You have been verified for the server ${capGuild.name}!!`});
+            await interaction.reply({ content: `🎈🎉YAY!! You have been verified for the server ${capGuild.name}🎉🎈`});
 
         }
     }
