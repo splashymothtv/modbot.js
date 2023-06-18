@@ -324,5 +324,126 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 })
 
+client.on(Events.InteractionCreate, async interaction => {
+  if (!interaction) return;
+  if (!interaction.isChatInputCommand()) return;
+
+  else {
+    const channelID = '1119873329919180820';
+    const channel = await client.channels.cache.get(channelID);
+    const server = interaction.guild.name
+    const user = interaction.user.tag
+    const userId = interaction.user.id
+
+    const embed = new EmbedBuilder()
+      .setColor("Random")
+      .setTitle(`⚠️ Chat Command Used!`)
+      .addFields({ name: `Server Name`, value: `${server}` })
+      .addFields({ name: `Chat Command`, value: `${interaction}` })
+      .addFields({ name: `User`, value: `${user} / ${userId}` })
+      .setTimestamp()
+      .setFooter({ text: `Chat Command Executed` })
+
+    await channel.send({ embeds: [embed] });
+
+  }
+})
+
+//captcha verification
+
+const capSchema = require("./Schemas.js/capSchema");
+const { author } = require('canvacord');
+
+let guild;
+
+client.on(Events.GuildMemberAdd, async member => {
+    const Data = await capSchema.findOne({ Guild: member.guild.id });
+    if(!Data) return;
+    else {
+        const cap = Data.Captcha;
+        
+        const captcha = new CaptchaGenerator()
+        .setDimension(150, 450)
+        .setCaptcha({ text: `${cap}`, size: 60, color: "green" })
+        .setDecoy({ opacity: 0.5 })
+        .setTrace({ color: "green" })
+
+        const buffer = captcha.generateSync();
+
+        const attachment = new AttachmentBuilder(buffer, { name: "captcha.png" });
+
+        const embed = new EmbedBuilder()
+        .setColor("Grey")
+        .setImage("attachment://captcha.png")
+        .setTitle(`Solve the captcha to be verified in ${member.guild.name}!!`)
+        .setFooter({ text: `Use the button below to submit your captcha answer!!` })
+
+        const capButton = new ActionRowBuilder()
+        .addComponents(
+            new ButtonBuilder()
+            .setCustomId('capButton')
+            .setLabel("Submit")
+            .setStyle(ButtonStyle.Danger)
+        )
+
+        const capModal = new ModalBuilder()
+        .setTitle("Submit Captcha Answer")
+        .setCustomId("capModal")
+
+        const answer = new TextInputBuilder()
+        .setCustomId("answer")
+        .setRequired(true)
+        .setLabel("Your captcha answer")
+        .setPlaceholder("Submit what you think the captcha is. You can always try again!!")
+        .setStyle(TextInputStyle.Short)
+
+        const firstActionRow = new ActionRowBuilder().addComponents(answer);
+
+        capModal.addComponents(firstActionRow);
+
+        const msg = await member.send({ embeds: [embed], files: [attachment], components: [capButton] }).catch(err => {
+            return;
+        })
+
+        const collector = msg.createMessageComponentCollector()
+
+        collector.on('collect', async i => {
+            if(i.customId === 'capButton') {
+                i.showModal(capModal);
+            }
+        })
+
+        guild = member.guild;
+
+    }
+})
+
+client.on(Events.InteractionCreate, async interaction => {
+    if(!interaction.isModalSubmit()) return;
+    else {
+        if(!interaction.customId === 'capModal') return;
+        const Data = await capSchema.findOne({ Guild: interaction.guild.id });
+
+        const answer = interaction.fields.getTextInputValue('answer');
+        const cap = Data.Captcha;
+
+        if(answer != `${cap}`) return await interaction.reply({ content: "That was wrong.... Try again!", ephemeral: true });
+        else {
+            const roleID = Data.Role;
+
+            const capGuild = await client.guilds.fetch(guild.id);
+            const role = await capGuild.roles.cache.get(roleID);
+            const member = await capGuild.members.fetch(interaction.user.id);
+
+            await member.roles.add(role).catch(err => {
+                interaction.reply({ content: "There was an error in the verifying process, contact server staff to proceed, please.", ephemeral: true });
+            })
+
+            await interaction.reply({ content: `Congratulations!! You have been verified for the server ${capGuild.name}!!`});
+
+        }
+    }
+})
+
 client.login(token);
 keepAlive();
