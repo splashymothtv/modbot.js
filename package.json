@@ -1,7 +1,7 @@
 {
   "name": "modbot",
   "version": "1.0.0",
-  "description": "",
+  "description": "This is my very first coding project. A Discord moderator bot that uses slash commands",
   "main": "bot.js",
   "scripts": {
     "test": "node .",
@@ -12,8 +12,14 @@
   "dependencies": {
     "better-sqlite3": "^8.4.0",
     "canvacord": "^5.4.9",
-    "mongoose": "^6.0.2",
+    "captcha-canvas": "^2.3.1",
+    "discloud": "^1.5.1",
+    "discloud.app": "^0.6.10",
+    "discord.js": "^14.11.0",
+    "express": "^4.18.2",
+    "mongoose": "^7.3.1",
     "quick.db": "^9.1.6",
-    "rss-parser": "^3.13.0"
+    "rss-parser": "^3.13.0",
+    "weather-js": "^2.0.0"
   }
 }

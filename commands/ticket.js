@@ -1,5 +1,5 @@
 const { EmbedBuilder, SlashCommandBuilder, PermissionsBitField, ButtonStyle, ActionRowBuilder, ButtonBuilder, ChannelType } = require('discord.js');
-const ticketSchema = require('../schemas/ticketSchema');
+const ticketSchema = require('../Schemas.js/ticketSchema');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -34,7 +34,7 @@ module.exports = {
                 const channel = await interaction.guild.channels.create({
                     name: `ticket ${i.user.tag}`,
                     type: ChannelType.GuildText,
-                    parent: `1118144680920625285`
+                    parent: `1120232457820700672`
                 });
 
                 channel.permissionOverwrites.create(i.user.id, { ViewChannel: true, SendMessages: true });
