@@ -1,12 +1,8 @@
-# modbot.js
-This is my very first coding project. A Discord moderator bot that uses slash commands
- 
- I build this bot while following the Discord Developer Docs:
- https://discord.com/developers/docs/intro
- And the Discordjs Guide:
- https://discordjs.guide/#before-you-begin
- 
- To deploy the bot & commands:
- Run node deploy-commands.js in your terminal.
- Run node bot.js to deploy the bot.
- 
+# 📖 Selfhost Instructions
+
+The `example` prefix is added to the configuration files to avoid leaking private information. You will need to copy those over first:
+
+- `cp src/example.config.json src/config.json`
+- `cp src/example.discloud.config src/discloud.config`
+
+Once those files are filled using `nano <file path>`, start the bot using `docker compose up -d`.

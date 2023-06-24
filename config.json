@@ -1,9 +1,0 @@
-{
-  "token": "your-discord-bot-token-goes-here",
-  "clientId": "your-discord-clientid-goes-here",
-  "guildId": "your-discord-guildid-goes-here",
-  "Sexual": [ "your", "list", "of", "nsfw words" ],
-  "Sexism": [ "your", "list", "of", "sexist words" ],
-  "Racial_Slurs": [ "your", "list", "of", "racial slurs" ],
-  "Insults": [ "your", "list", "of", "insults" ]
-}
