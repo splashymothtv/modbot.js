@@ -1,148 +1,84 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { EmbedBuilder, PermissionsBitField } = require("discord.js");
-const joinleaveSchema = require("../Schemas.js/joinleaveSchema");
+const welSchema = require("../../Schemas.js/welSchema");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("join-leave")
-    .setDescription("Set the channels where join/leave messages are sent")
-    .addSubcommand((command) =>
-      command.setName("set-join")
-      .setDescription("Set up the welcome channel")
-    )
-    .addChannelOption((option) =>
-      option
-        .setName("channel")
-        .setDescription(
-          "this is the channel where the welcome messages are sent"
-        )
-        .setRequired(true)
-    )
-    .addSubcommand((command) =>
-      command.setName("set-leave")
-      .setDescription("Set up the welcome channel")
-    )
-    .addChannelOption((option) =>
-      option
-        .setName("channel")
-        .setDescription(
-          "this is the channel where the goodbye messages are sent"
-        )
-        .setRequired(true)
-    )
-
+    .setName("welchannel")
+    .setDescription("Configure the welcome channel for your server")
     .addSubcommand((command) =>
       command
-        .setName("disable-join")
-        .setDescription("Disable the welcome channel")
+        .setName("set")
+        .setDescription("The channel for your welcome messages")
+        .addChannelOption((option) =>
+          option.setName("channel").setRequired(true)
+        )
     )
     .addSubcommand((command) =>
-      command
-        .setName("disable-leave")
-        .setDescription("Disable the goodbye channel")
+      command.setName("disbale").setDescription("Disable the welcome channel")
     ),
-
-  async execute(interaction) {
+  async execute(interaction, client) {
     if (
       !interaction.member.permissions.has(
-        PermissionsBitField.Flags.ManageChannels
+        PermissionsBitField.Flags.ModerateMembers
       )
     )
       return await interaction.reply({
-        content: "You don't have permission to use this command!",
+        content: `You are not allowed to use this command`,
         ephemeral: true,
       });
 
-    const Data = await joinleaveSchema.findOne({ Guild: interaction.guild.id });
-
-    const { options } = interaction;
+    const data = await welSchema.findOne({
+      Guild: interaction.guild.id,
+    });
     const sub = options.getSubcommand();
+    const { options, channel, guild } = interaction;
 
     switch (sub) {
-      case "set-join":
-        if (Data)
+      case "set":
+        if (data)
           return await interaction.reply({
-            content: `This guild already has a designated welcome channel!`,
+            content: `This guild already has a designated channel for welcome messages`,
             ephemeral: true,
           });
         else {
-          const channel = interaction.options.getChannel("channel");
+          const welChannel = options.getChannel("channel");
 
-          await joinleaveSchema.create({
+          const embed = new EmbedBuilder();
+          welSchema.findOne({
             Guild: interaction.guild.id,
-            Channel: channel.id,
+            Channel: welChannel.id,
           });
 
-          const embed = new EmbedBuilder()
-            .setColor("Aqua")
+          embed
+            .setColor("Green")
             .setDescription(
-              `✅ : your welcome channel has been set to ${channel}`
+              `Your welcome channel has been set to ${welChannel}`
             );
 
           await interaction.reply({ embeds: [embed] });
         }
 
         break;
-      case "disable-join":
-        if (!Data)
-          return interaction.reply({
-            content: `This guild does not have a designated welcome channel!`,
-            ephemeral: true,
-          });
-        else {
-          await joinleaveSchema.deleteMany({ Guild: interaction.guild.id });
-
-          const embed = new EmbedBuilder()
-            .setColor("Red")
-            .setDescription(
-              `❗: Your welcome channel has been disabled! Use the /welchannel-setup to assign another channel!`
-            );
-
-          await interaction.reply({ embeds: [embed] });
-        }
-
-        break;
-      case "set-leave":
-        if (Data)
+      case "disable":
+        if (!data)
           return await interaction.reply({
-            content: `This guild already has a designated goodbye channel!`,
+            content: `This guild does not have an assigned welcome channel`,
             ephemeral: true,
           });
         else {
-          const channel = interaction.options.getChannel("channel");
-
-          await joinleaveSchema.create({
+          const embed = new EmbedBuilder();
+          await welSchema.deleteMany({
             Guild: interaction.guild.id,
-            Channel: channel.id,
+            Channel: welChannel.id,
           });
-
-          const embed = new EmbedBuilder()
-            .setColor("Aqua")
-            .setDescription(
-              `✅ : your goodbye channel has been set to ${channel}`
-            );
-
-          await interaction.reply({ embeds: [embed] });
-        }
-
-        break;
-      case "disable-leave":
-        if (!Data)
-          return interaction.reply({
-            content: `This guild does not have a designated goodbye channel!`,
-            ephemeral: true,
-          });
-        else {
-          await joinleaveSchema.deleteMany({ Guild: interaction.guild.id });
-
-          const embed = new EmbedBuilder()
+          embed
             .setColor("Red")
-            .setDescription(
-              `❗: Your goodbye channel has been disabled! Use the /welchannel-setup to assign another channel!`
-            );
+            .setDescription(`Your welcome channel has been disabled`);
 
           await interaction.reply({ embeds: [embed] });
         }
     }
   },
 };
+
