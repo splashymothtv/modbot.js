@@ -15,7 +15,7 @@ module.exports = {
         )
     )
     .addSubcommand((command) =>
-      command.setName("disbale").setDescription("Disable the welcome channel")
+      command.setName("disable").setDescription("Disable the welcome channel")
     ),
   async execute(interaction, client) {
     if (
