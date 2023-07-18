@@ -49,92 +49,70 @@ const config = require("./config.json");
 const { CaptchaGenerator } = require("captcha-canvas");
 const { QuickDB } = require("quick.db");
 
-const {
-  token,
-  clientId,
-  guildId,
-  mongoLogin,
-  Insults,
-  Racial_Slurs,
-  Sexual,
-  Sexism,
-  Anti_LGBTQ,
-} = require("./config.json");
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildPresences,
+    GatewayIntentBits.GuildVoiceStates,
+  ],
+  partials: [Partials.Channel, Partials.Reaction, Partials.Message],
+});
 
 const keepAlive = require("./server.js");
 
-client.commands = new Collection();
-const foldersPath = path.join(__dirname, "commands");
-const commandFolders = fs.readdirSync(foldersPath);
+const mongoose = require("mongoose");
+const { QuickDB } = require("quick.db");
+const { token, mongodbURL } = process.env;
+const config = require("./config.json");
+const { badWords } = require("./config.json");
+const today = new Date().toLocaleDateString();
 
-for (const folder of commandFolders) {
-  const commandsPath = path.join(__dirname, "commands");
-  const files = fs.readdirSync(path.resolve(__dirname, "commands"));
-  const commandFiles = fs
-    .readdirSync("./commands")
-    .filter((file) => file.endsWith(".js"));
-  for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
-    if ("data" in command && "execute" in command) {
-      client.commands.set(command.data.name, command);
-    } else {
-      console.log(
-        `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
-      );
-    }
-  }
-}
-mongoose.connect(mongoLogin || "", {
-  keepAlive: true,
+client.commands = new Collection();
+client.buttons = new Collection();
+
+const functions = fs
+  .readdirSync("./src/functions")
+  .filter((file) => file.endsWith(".js"));
+const eventFiles = fs
+  .readdirSync("./src/events")
+  .filter((file) => file.endsWith(".js"));
+const commandFolders = fs.readdirSync("./src/commands");
+mongoose.connect(mongodbURL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 
-const eventsPath = path.join(__dirname, "events");
-const eventFiles = fs
-  .readdirSync(eventsPath)
-  .filter((file) => file.endsWith(".js"));
-
-for (const file of eventFiles) {
-  const filePath = path.join(eventsPath, file);
-  const event = require(filePath);
-  if (event.once) {
-    client.once(event.name, (...args) => event.execute(...args));
-  } else {
-    client.on(event.name, (...args) => event.execute(...args));
+(async () => {
+  for (file of functions) {
+    require(`./functions/${file}`)(client);
   }
-}
+  client.handleEvents(eventFiles, "./src/events");
+  client.handleCommands(commandFolders, "./src/commands");
+  client.login(process.env.token);
+})();
 
-client.once(Events.ClientReady, () => {
-  console.log(`${client.user.tag} is alive!`);
-});
-
-client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
-
-  const command = client.commands.get(interaction.commandName);
-
-  console.log(interaction);
-
-  try {
-    await command.execute(interaction, client);
-  } catch (error) {
-    console.error(error);
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp({
-        content: "There was an error while executing this command!",
-        ephemeral: true,
-      });
-    } else {
-      await interaction.reply({
-        content: "There was an error while executing this command!",
-        ephemeral: true,
-      });
-    }
-  }
-});
-
+client.on(Events.MessageCreate, async (message, interaction)
+ => {
+   const member = message.author();
+   
+   let word = config.badWords.some((word) => message.content.toLowerCase().includes(word))
+   if (message.content.toLowerCase().includes(word))
+ ) { 
+     message.delete();
+     console.log(`A message from ${message.author.tag} in ${message.guild.name} was removed ${today} because it contained a bad word || ${word}`);
+   const dmEmbed = new EmbedBuilder()
+     .setColor('Red')
+     .setDescription(`Your message in ${message.guild.name} was removed because it contains a word that is not allowed in that guild || ${word}`);
+   const embed = new EmbedBuilder()
+     .setColor('Red')
+     .setDescription(`Message from ${message.author.tag} was removed due to banned word || ${word}`);
+   await member.send({ embeds: [dmEmbed] }).catch(err => {
+     return;
+   });
+   
 const db = new QuickDB();
 
 client.on(Events.GuildMemberAdd, async (member) => {
@@ -155,19 +133,6 @@ client.on(Events.GuildMemberAdd, async (member) => {
     .setTitle(`${member.user.tag} has joined the server!`)
     .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
     .setTimestamp(Date.now());
-
-  const button = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("button")
-      .setEmoji("✅")
-      .setLabel("Verify")
-      .setStyle(ButtonStyle.Success)
-  );
-
-  const verifyEmbed = new EmbedBuilder()
-    .setColor("Purple")
-    .setTitle("Server verification")
-    .setDescription("Get verified in the server");
 
   member.send({ embeds: [welcomedmEmbed] });
   channel.send({ embeds: [welcomeEmbed] });
